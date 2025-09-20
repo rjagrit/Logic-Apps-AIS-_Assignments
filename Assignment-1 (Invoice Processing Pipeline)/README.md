@@ -25,7 +25,7 @@ This Logic App listens to messages from a Service Bus queue, validates invoice d
 
 * **Action** → Service Bus → *When a message is received in a queue (peek-lock)*
 * **Queue name** → `jagrit-queue-03`
-<img width="1545" height="700" alt="image" src="https://github.com/user-attachments/assets/5d19d6a3-6b3e-4e7e-8767-249f8f679e1f" />
+<img width="1545" height="700" alt="Screenshot 2025-09-20 235805" src="https://github.com/user-attachments/assets/03a5fe11-45fe-4036-ba2c-36aa2deeead9" />
 
 ---
 
@@ -37,7 +37,7 @@ This Logic App listens to messages from a Service Bus queue, validates invoice d
 ```text
 base64ToString(triggerBody()?['ContentData'])
 ```
-<img width="1542" height="705" alt="image" src="https://github.com/user-attachments/assets/95850ed3-4386-4c13-9c2b-890b5d722db0" />
+<img width="1542" height="705" alt="Screenshot 2025-09-20 235853" src="https://github.com/user-attachments/assets/2bc42d88-5dac-4a02-abf6-a470d18758e3" />
 
 ---
 
@@ -58,7 +58,7 @@ base64ToString(triggerBody()?['ContentData'])
   }
 }
 ```
-<img width="1547" height="701" alt="image" src="https://github.com/user-attachments/assets/4eeaffad-b088-4394-ad08-c871b81fc9dd" />
+<img width="1547" height="701" alt="Screenshot 2025-09-20 235945" src="https://github.com/user-attachments/assets/b8488e04-ecb0-4a4d-aa6d-16c8bbb28d45" />
 
 ---
 
@@ -70,13 +70,13 @@ base64ToString(triggerBody()?['ContentData'])
 ```text
 @lessOrEquals(body('Parse_JSON')?['Amount'], 0)
 ```
-<img width="1548" height="710" alt="image" src="https://github.com/user-attachments/assets/e036a6fb-5b1c-471e-8062-c13b6f20e18d" />
+<img width="1548" height="710" alt="Screenshot 2025-09-21 000020" src="https://github.com/user-attachments/assets/8acee728-69f4-4371-a119-b365c8eca5b5" />
 
 **👉 True branch (Amount ≤ 0):**  
 * Action → Service Bus → *Dead-letter the message*  
   * Lock Token → `@triggerBody()?['LockToken']`  
   * Optional reason → `"Invalid amount"`
-<img width="1544" height="699" alt="image" src="https://github.com/user-attachments/assets/570e51ce-2ba2-47d9-bfdd-ae7290d877fc" />
+<img width="1544" height="699" alt="Screenshot 2025-09-21 000109" src="https://github.com/user-attachments/assets/b276c121-8e4e-4ab9-ab41-6691a5298d7d" />
 
 **👉 False branch (Amount > 0):**  
 → Continue with normal processing
@@ -97,7 +97,7 @@ concat('invoice-', body('Parse_JSON')?['InvoiceId'], '.json')
 ```text
 outputs('Compose')
 ```
-<img width="1544" height="704" alt="image" src="https://github.com/user-attachments/assets/07f7b994-276f-4e2e-92fe-62bc69546b35" />
+<img width="1544" height="704" alt="Screenshot 2025-09-21 000225" src="https://github.com/user-attachments/assets/d5bb308c-a023-4564-a6b3-3dbb83619ae4" />
 
 ---
 
@@ -121,7 +121,7 @@ Customer: @{body('Parse_JSON')?['CustomerName']}
 Amount: @{body('Parse_JSON')?['Amount']}
 Date: @{body('Parse_JSON')?['Date']}
 ```
-<img width="1543" height="701" alt="image" src="https://github.com/user-attachments/assets/69049ce8-eb4e-4011-aa88-6af4f0694c94" />
+<img width="1543" height="701" alt="Screenshot 2025-09-21 000247" src="https://github.com/user-attachments/assets/3c33fe6e-e030-4c0d-97ea-d28effc6e976" />
 
 ---
 
@@ -129,7 +129,7 @@ Date: @{body('Parse_JSON')?['Date']}
 
 * **Action** → Service Bus → *Complete the message*  
 * **Lock Token** → `@triggerBody()?['LockToken']`
-<img width="1541" height="702" alt="image" src="https://github.com/user-attachments/assets/bd5af6ae-088b-4375-b5e3-947af8631251" />
+<img width="1541" height="702" alt="Screenshot 2025-09-21 000413" src="https://github.com/user-attachments/assets/15bf6109-4985-4fe5-9e45-ec147259bab1" />
 
 ---
 
@@ -155,21 +155,33 @@ Date: @{body('Parse_JSON')?['Date']}
 }
 ```
 -Send the message in the Service bus queues
-<img width="1543" height="690" alt="image" src="https://github.com/user-attachments/assets/1d846c0c-0f45-449b-995f-f080036f3993" />
+<img width="1543" height="690" alt="Screenshot 2025-09-21 001446" src="https://github.com/user-attachments/assets/0d99552a-e2a5-48e9-bce3-89eb4501ab8a" />
 
 -Peek at the message. After that, the workflow will start
-<img width="1555" height="654" alt="image" src="https://github.com/user-attachments/assets/ba6f02fb-ebce-4464-b957-d5d4f8d20915" />
+<img width="1555" height="654" alt="Screenshot 2025-09-21 001542" src="https://github.com/user-attachments/assets/a457601e-7b4b-4783-8095-12e1f2a64732" />
 
 -Inside the Storage account Container, we found our files
 JSON File
-<img width="1102" height="579" alt="image" src="https://github.com/user-attachments/assets/9da9facf-9e1e-46a5-ae3a-0721f7dd0b52" />
+<img width="1102" height="579" alt="Screenshot 2025-09-21 001854" src="https://github.com/user-attachments/assets/f7b6703c-ac5e-4470-85e9-fdcf2022aa2a" />
 
 Txt file
-<img width="1102" height="628" alt="image" src="https://github.com/user-attachments/assets/ddea2b26-e9ed-4abf-9269-ed7ceb1341e7" />
+<img width="1503" height="628" alt="Screenshot 2025-09-21 002015" src="https://github.com/user-attachments/assets/8919937f-3ddb-4187-928f-cddd257f2031" />
+
+### Demo-2
+```json
+{
+  "InvoiceId": "INV-1001",
+  "CustomerName": "Jagrit Enterprises",
+  "Amount": 1500,
+  "Date": "2025-09-20"
+}
+```
+It will go to the Dead Letter Queue (DLQ)
+<img width="1360" height="687" alt="image" src="https://github.com/user-attachments/assets/2b846e21-cd41-457b-97a2-07584e9cd90a" />
 
 ## The Workflow diagram
-<img width="1002" height="395" alt="image" src="https://github.com/user-attachments/assets/e7f17e55-ce5b-4acf-916f-f84ddaca0d13" />
-<img width="1009" height="650" alt="image" src="https://github.com/user-attachments/assets/0fef004d-bb6c-4eae-9727-74ecad4205ea" />
+<img width="1002" height="395" alt="Screenshot 2025-09-21 000811" src="https://github.com/user-attachments/assets/b8a17f3c-8b60-4ea8-9e2d-9ddb20be6d75" />
+<img width="1002" height="650" alt="Screenshot 2025-09-21 000840" src="https://github.com/user-attachments/assets/fcb9ca9f-f2e1-4ae3-bd42-1280c203c7ca" />
 
 
 
