@@ -1,0 +1,210 @@
+{
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "contentVersion": "1.0.0.0",
+        "triggers": {
+            "When_a_message_is_received_in_a_queue_(peek-lock)": {
+                "recurrence": {
+                    "interval": 3,
+                    "frequency": "Minute"
+                },
+                "evaluatedRecurrence": {
+                    "interval": 3,
+                    "frequency": "Minute"
+                },
+                "type": "ApiConnection",
+                "inputs": {
+                    "host": {
+                        "connection": {
+                            "name": "@parameters('$connections')['servicebus-1']['connectionId']"
+                        }
+                    },
+                    "method": "get",
+                    "path": "/@{encodeURIComponent(encodeURIComponent('jagrit-queue-03'))}/messages/head/peek",
+                    "queries": {
+                        "queueType": "Main",
+                        "sessionId": "None"
+                    }
+                }
+            }
+        },
+        "actions": {
+            "Compose": {
+                "runAfter": {},
+                "type": "Compose",
+                "inputs": "@base64ToString(triggerBody()?['ContentData'])"
+            },
+            "Parse_JSON": {
+                "runAfter": {
+                    "Compose": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "ParseJson",
+                "inputs": {
+                    "content": "@outputs('Compose')",
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "InvoiceId": {
+                                "type": "string"
+                            },
+                            "CustomerName": {
+                                "type": "string"
+                            },
+                            "Amount": {
+                                "type": "number"
+                            },
+                            "Date": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "Condition": {
+                "actions": {
+                    "Dead-letter_the_message_in_a_queue": {
+                        "type": "ApiConnection",
+                        "inputs": {
+                            "host": {
+                                "connection": {
+                                    "name": "@parameters('$connections')['servicebus-1']['connectionId']"
+                                }
+                            },
+                            "method": "post",
+                            "path": "/@{encodeURIComponent(encodeURIComponent('jagrit-queue-03'))}/messages/deadletter",
+                            "queries": {
+                                "lockToken": "@triggerBody()?['LockToken']",
+                                "sessionId": "",
+                                "deadLetterReason": "\"Invalid amount\"",
+                                "deadLetterErrorDescription": ""
+                            }
+                        }
+                    }
+                },
+                "runAfter": {
+                    "Parse_JSON": [
+                        "Succeeded"
+                    ]
+                },
+                "else": {
+                    "actions": {
+                        "Create_blob_(V2)": {
+                            "type": "ApiConnection",
+                            "inputs": {
+                                "host": {
+                                    "connection": {
+                                        "name": "@parameters('$connections')['azureblob']['connectionId']"
+                                    }
+                                },
+                                "method": "post",
+                                "body": "@outputs('Compose')",
+                                "headers": {
+                                    "ReadFileMetadataFromServer": true
+                                },
+                                "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('AccountNameFromSettings'))}/files",
+                                "queries": {
+                                    "folderPath": "/jagrit-cont-03",
+                                    "name": "@concat('invoice-',body('Parse_JSON')?['InvoiceId'],'.json')\r\n",
+                                    "queryParametersSingleEncoded": true
+                                }
+                            },
+                            "runtimeConfiguration": {
+                                "contentTransfer": {
+                                    "transferMode": "Chunked"
+                                }
+                            }
+                        },
+                        "Create_blob_(V2)_1": {
+                            "type": "ApiConnection",
+                            "inputs": {
+                                "host": {
+                                    "connection": {
+                                        "name": "@parameters('$connections')['azureblob']['connectionId']"
+                                    }
+                                },
+                                "method": "post",
+                                "body": "Invoice Summary\n-----------------\nInvoice ID: @{body('Parse_JSON')?['InvoiceId']}\nCustomer: @{body('Parse_JSON')?['CustomerName']}\nAmount: @{body('Parse_JSON')?['Amount']}\nDate: @{body('Parse_JSON')?['Date']}\n",
+                                "headers": {
+                                    "ReadFileMetadataFromServer": true
+                                },
+                                "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('AccountNameFromSettings'))}/files",
+                                "queries": {
+                                    "folderPath": "/jagrit-cont-03",
+                                    "name": "@concat('summary-',body('Parse_JSON')?['InvoiceId'],'.txt')\r\n",
+                                    "queryParametersSingleEncoded": true
+                                }
+                            },
+                            "runtimeConfiguration": {
+                                "contentTransfer": {
+                                    "transferMode": "Chunked"
+                                }
+                            }
+                        },
+                        "Complete_the_message_in_a_queue": {
+                            "runAfter": {
+                                "Create_blob_(V2)": [
+                                    "Succeeded"
+                                ],
+                                "Create_blob_(V2)_1": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "ApiConnection",
+                            "inputs": {
+                                "host": {
+                                    "connection": {
+                                        "name": "@parameters('$connections')['servicebus-1']['connectionId']"
+                                    }
+                                },
+                                "method": "delete",
+                                "path": "/@{encodeURIComponent(encodeURIComponent('jagrit-queue-03'))}/messages/complete",
+                                "queries": {
+                                    "lockToken": "@triggerBody()?['LockToken']",
+                                    "queueType": "Main",
+                                    "sessionId": ""
+                                }
+                            }
+                        }
+                    }
+                },
+                "expression": {
+                    "and": [
+                        {
+                            "lessOrEquals": [
+                                "@body('Parse_JSON')?['Amount']",
+                                0
+                            ]
+                        }
+                    ]
+                },
+                "type": "If"
+            }
+        },
+        "outputs": {},
+        "parameters": {
+            "$connections": {
+                "type": "Object",
+                "defaultValue": {}
+            }
+        }
+    },
+    "parameters": {
+        "$connections": {
+            "type": "Object",
+            "value": {
+                "servicebus-1": {
+                    "id": "/subscriptions/2efcc8a1-b14d-45a0-9b77-8cdf053cd14a/providers/Microsoft.Web/locations/eastus/managedApis/servicebus",
+                    "connectionId": "/subscriptions/2efcc8a1-b14d-45a0-9b77-8cdf053cd14a/resourceGroups/khoj-rg-dev-training/providers/Microsoft.Web/connections/servicebus-7",
+                    "connectionName": "servicebus-7"
+                },
+                "azureblob": {
+                    "id": "/subscriptions/2efcc8a1-b14d-45a0-9b77-8cdf053cd14a/providers/Microsoft.Web/locations/eastus/managedApis/azureblob",
+                    "connectionId": "/subscriptions/2efcc8a1-b14d-45a0-9b77-8cdf053cd14a/resourceGroups/khoj-rg-dev-training/providers/Microsoft.Web/connections/azureblob",
+                    "connectionName": "azureblob"
+                }
+            }
+        }
+    }
+}
