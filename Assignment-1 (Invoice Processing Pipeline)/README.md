@@ -162,26 +162,25 @@ Date: @{body('Parse_JSON')?['Date']}
 
 -Inside the Storage account Container, we found our files
 JSON File
-<img width="1102" height="579" alt="Screenshot 2025-09-21 001854" src="https://github.com/user-attachments/assets/f7b6703c-ac5e-4470-85e9-fdcf2022aa2a" />
+<img width="1588" height="748" alt="image" src="https://github.com/user-attachments/assets/64065fe4-4e7d-4c2e-bd11-6c79ba730b09" />
 
 Txt file
-<img width="1503" height="628" alt="Screenshot 2025-09-21 002015" src="https://github.com/user-attachments/assets/8919937f-3ddb-4187-928f-cddd257f2031" />
+<img width="1578" height="737" alt="image" src="https://github.com/user-attachments/assets/216fb2f1-fe3b-4449-8a08-f1efbeefde25" />
 
 ### Demo-2
 ```json
 {
-  "InvoiceId": "INV-1001",
-  "CustomerName": "Jagrit Enterprises",
-  "Amount": 1500,
-  "Date": "2025-09-20"
+    "InvoiceId": "INV-112",
+    "CustomerName": "Jagga Enterprises",
+    "Amount": 0,
+    "Date": "2025-09-20"
 }
 ```
 It will go to the Dead Letter Queue (DLQ)
-<img width="1360" height="687" alt="image" src="https://github.com/user-attachments/assets/2b846e21-cd41-457b-97a2-07584e9cd90a" />
+<img width="1622" height="792" alt="image" src="https://github.com/user-attachments/assets/1119b4d9-5fda-47d5-b186-4553a4a93b53" />
 
-## The Workflow diagram
-<img width="1002" height="395" alt="Screenshot 2025-09-21 000811" src="https://github.com/user-attachments/assets/b8a17f3c-8b60-4ea8-9e2d-9ddb20be6d75" />
-<img width="1002" height="650" alt="Screenshot 2025-09-21 000840" src="https://github.com/user-attachments/assets/fcb9ca9f-f2e1-4ae3-bd42-1280c203c7ca" />
-
+### The Workflow
+<img width="779" height="455" alt="image" src="https://github.com/user-attachments/assets/a48ebdd8-d108-466b-bfb4-e633bcde609c" />
+<img width="779" height="559" alt="image" src="https://github.com/user-attachments/assets/40d4360f-fefb-4fd0-a602-906ec2ca2566" />
 
 
