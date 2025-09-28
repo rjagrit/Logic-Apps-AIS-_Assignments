@@ -25,7 +25,7 @@ This Logic App listens to messages from a Service Bus queue, validates invoice d
 
 * **Action** → Service Bus → *When a message is received in a queue (peek-lock)*
 * **Queue name** → `jagrit-queue-03`
-<img width="1545" height="700" alt="Screenshot 2025-09-20 235805" src="https://github.com/user-attachments/assets/03a5fe11-45fe-4036-ba2c-36aa2deeead9" />
+<img width="1545" height="700" alt="Screenshot 2025-09-20 235805" src="https://github.com/user-attachments/assets/fac8608f-1599-43e1-b621-1877591182f0" />
 
 ---
 
@@ -37,7 +37,7 @@ This Logic App listens to messages from a Service Bus queue, validates invoice d
 ```text
 base64ToString(triggerBody()?['ContentData'])
 ```
-<img width="1542" height="705" alt="Screenshot 2025-09-20 235853" src="https://github.com/user-attachments/assets/2bc42d88-5dac-4a02-abf6-a470d18758e3" />
+<img width="1542" height="705" alt="Screenshot 2025-09-20 235853" src="https://github.com/user-attachments/assets/47abe8c1-54a1-4e65-aee2-363ebc64d084" />
 
 ---
 
@@ -58,7 +58,7 @@ base64ToString(triggerBody()?['ContentData'])
   }
 }
 ```
-<img width="1547" height="701" alt="Screenshot 2025-09-20 235945" src="https://github.com/user-attachments/assets/b8488e04-ecb0-4a4d-aa6d-16c8bbb28d45" />
+<img width="1547" height="701" alt="Screenshot 2025-09-20 235945" src="https://github.com/user-attachments/assets/9aeb249f-6846-46ec-a039-bc30b52aff6b" />
 
 ---
 
@@ -70,16 +70,17 @@ base64ToString(triggerBody()?['ContentData'])
 ```text
 @lessOrEquals(body('Parse_JSON')?['Amount'], 0)
 ```
-<img width="1548" height="710" alt="Screenshot 2025-09-21 000020" src="https://github.com/user-attachments/assets/8acee728-69f4-4371-a119-b365c8eca5b5" />
+<img width="1548" height="710" alt="Screenshot 2025-09-21 000020" src="https://github.com/user-attachments/assets/99ac6bb3-1064-4ce7-815c-36c3cecec656" />
 
 **👉 True branch (Amount ≤ 0):**  
 * Action → Service Bus → *Dead-letter the message*  
   * Lock Token → `@triggerBody()?['LockToken']`  
   * Optional reason → `"Invalid amount"`
-<img width="1544" height="699" alt="Screenshot 2025-09-21 000109" src="https://github.com/user-attachments/assets/b276c121-8e4e-4ab9-ab41-6691a5298d7d" />
+<img width="1544" height="699" alt="Screenshot 2025-09-21 000109" src="https://github.com/user-attachments/assets/929a1cca-007d-498c-890f-f47cfefacbef" />
 
 **👉 False branch (Amount > 0):**  
 → Continue with normal processing
+<img width="1544" height="704" alt="Screenshot 2025-09-21 000225" src="https://github.com/user-attachments/assets/116c8a8f-d445-4c13-b0fe-f15159d72d21" />
 
 ---
 
@@ -97,7 +98,7 @@ concat('invoice-', body('Parse_JSON')?['InvoiceId'], '.json')
 ```text
 outputs('Compose')
 ```
-<img width="1544" height="704" alt="Screenshot 2025-09-21 000225" src="https://github.com/user-attachments/assets/d5bb308c-a023-4564-a6b3-3dbb83619ae4" />
+<img width="1544" height="704" alt="Screenshot 2025-09-21 000225" src="https://github.com/user-attachments/assets/b49dc0c1-9ef8-4196-9703-faec87a11805" />
 
 ---
 
@@ -121,7 +122,7 @@ Customer: @{body('Parse_JSON')?['CustomerName']}
 Amount: @{body('Parse_JSON')?['Amount']}
 Date: @{body('Parse_JSON')?['Date']}
 ```
-<img width="1543" height="701" alt="Screenshot 2025-09-21 000247" src="https://github.com/user-attachments/assets/3c33fe6e-e030-4c0d-97ea-d28effc6e976" />
+<img width="1543" height="701" alt="Screenshot 2025-09-21 000247" src="https://github.com/user-attachments/assets/1e275a38-a9e4-4115-8f88-b8956b9e5d89" />
 
 ---
 
@@ -129,7 +130,7 @@ Date: @{body('Parse_JSON')?['Date']}
 
 * **Action** → Service Bus → *Complete the message*  
 * **Lock Token** → `@triggerBody()?['LockToken']`
-<img width="1541" height="702" alt="Screenshot 2025-09-21 000413" src="https://github.com/user-attachments/assets/15bf6109-4985-4fe5-9e45-ec147259bab1" />
+<img width="1541" height="702" alt="Screenshot 2025-09-21 000413" src="https://github.com/user-attachments/assets/49f1bcdc-6800-4c72-a9d2-66a7bf930c14" />
 
 ---
 
@@ -155,32 +156,34 @@ Date: @{body('Parse_JSON')?['Date']}
 }
 ```
 -Send the message in the Service bus queues
-<img width="1543" height="690" alt="Screenshot 2025-09-21 001446" src="https://github.com/user-attachments/assets/0d99552a-e2a5-48e9-bce3-89eb4501ab8a" />
+<img width="1543" height="690" alt="Screenshot 2025-09-21 001446" src="https://github.com/user-attachments/assets/c421e711-c843-43a7-8f2a-05fa17a4022f" />
 
 -Peek at the message. After that, the workflow will start
-<img width="1555" height="654" alt="Screenshot 2025-09-21 001542" src="https://github.com/user-attachments/assets/a457601e-7b4b-4783-8095-12e1f2a64732" />
+<img width="1555" height="654" alt="Screenshot 2025-09-21 001542" src="https://github.com/user-attachments/assets/60cf08b8-a08d-4e2a-b9e6-502c9f521b30" />
 
 -Inside the Storage account Container, we found our files
 JSON File
-<img width="1588" height="748" alt="image" src="https://github.com/user-attachments/assets/64065fe4-4e7d-4c2e-bd11-6c79ba730b09" />
+<img width="1102" height="579" alt="Screenshot 2025-09-21 001854" src="https://github.com/user-attachments/assets/85960182-649e-4121-b07a-bffbc7d8a515" />
 
 Txt file
-<img width="1578" height="737" alt="image" src="https://github.com/user-attachments/assets/216fb2f1-fe3b-4449-8a08-f1efbeefde25" />
+<img width="1503" height="628" alt="Screenshot 2025-09-21 002015" src="https://github.com/user-attachments/assets/93ee1838-3290-4bb4-befc-9dc5a2572a5d" />
+
 
 ### Demo-2
 ```json
 {
-    "InvoiceId": "INV-112",
-    "CustomerName": "Jagga Enterprises",
+    "InvoiceId": "INV-1002",
+    "CustomerName": "Test Customer",
     "Amount": 0,
     "Date": "2025-09-20"
 }
 ```
-It will go to the Dead Letter Queue (DLQ)
-<img width="1622" height="792" alt="image" src="https://github.com/user-attachments/assets/1119b4d9-5fda-47d5-b186-4553a4a93b53" />
+-Inside the DLQ
+<img width="1360" height="687" alt="Screenshot 2025-09-21 003645" src="https://github.com/user-attachments/assets/790c968d-c3ae-4f48-8366-4b554a25efcf" />
 
-### The Workflow
-<img width="779" height="455" alt="image" src="https://github.com/user-attachments/assets/a48ebdd8-d108-466b-bfb4-e633bcde609c" />
-<img width="779" height="559" alt="image" src="https://github.com/user-attachments/assets/40d4360f-fefb-4fd0-a602-906ec2ca2566" />
+## The Workflow diagram
+<img width="1002" height="395" alt="Screenshot 2025-09-21 000811" src="https://github.com/user-attachments/assets/aed67035-7b3b-4a1c-9261-a5761267684c" />
+<img width="1002" height="650" alt="Screenshot 2025-09-21 000840" src="https://github.com/user-attachments/assets/6a8731b5-bff9-430d-8319-f20e170108a4" />
+
 
 
