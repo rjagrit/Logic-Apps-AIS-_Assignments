@@ -1,0 +1,124 @@
+{
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "contentVersion": "1.0.0.0",
+        "triggers": {
+            "When_an_HTTP_request_is_received": {
+                "type": "Request",
+                "kind": "Http",
+                "inputs": {
+                    "method": "POST"
+                }
+            }
+        },
+        "actions": {
+            "Insert_row_(V2)": {
+                "runAfter": {
+                    "Parse_JSON": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "ApiConnection",
+                "inputs": {
+                    "host": {
+                        "connection": {
+                            "name": "@parameters('$connections')['sql']['connectionId']"
+                        }
+                    },
+                    "method": "post",
+                    "body": {
+                        "FirstName": "@body('Parse_JSON')?['FirstName']",
+                        "LastName": "@body('Parse_JSON')?['LastName']",
+                        "Department": "@body('Parse_JSON')?['Department']",
+                        "Salary": "@body('Parse_JSON')?['Salary']",
+                        "JoiningDate": "@body('Parse_JSON')?['JoiningDate']"
+                    },
+                    "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('default'))},@{encodeURIComponent(encodeURIComponent('default'))}/tables/@{encodeURIComponent(encodeURIComponent('[dbo].[Employees]'))}/items"
+                }
+            },
+            "Get_rows_(V2)": {
+                "runAfter": {
+                    "Insert_row_(V2)": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "ApiConnection",
+                "inputs": {
+                    "host": {
+                        "connection": {
+                            "name": "@parameters('$connections')['sql']['connectionId']"
+                        }
+                    },
+                    "method": "get",
+                    "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('default'))},@{encodeURIComponent(encodeURIComponent('default'))}/tables/@{encodeURIComponent(encodeURIComponent('[dbo].[Employees]'))}/items",
+                    "queries": {
+                        "$filter": "FirstName eq '@{body('Parse_JSON')?['FirstName']}'\n"
+                    }
+                }
+            },
+            "Response": {
+                "runAfter": {
+                    "Get_rows_(V2)": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "Response",
+                "kind": "Http",
+                "inputs": {
+                    "statusCode": 200,
+                    "body": {
+                        "status": "Success",
+                        "dbFirstName": "@{first(body('Get_rows_(V2)')?['value'])?['FirstName']}",
+                        "dbLastName": "@{first(body('Get_rows_(V2)')?['value'])?['LastName']}"
+                    }
+                }
+            },
+            "Parse_JSON": {
+                "runAfter": {},
+                "type": "ParseJson",
+                "inputs": {
+                    "content": "@triggerBody()",
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "FirstName": {
+                                "type": "string"
+                            },
+                            "LastName": {
+                                "type": "string"
+                            },
+                            "Department": {
+                                "type": "string"
+                            },
+                            "Salary": {
+                                "type": "integer"
+                            },
+                            "JoiningDate": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "outputs": {},
+        "parameters": {
+            "$connections": {
+                "type": "Object",
+                "defaultValue": {}
+            }
+        }
+    },
+    "parameters": {
+        "$connections": {
+            "type": "Object",
+            "value": {
+                "sql": {
+                    "id": "/subscriptions/2efcc8a1-b14d-45a0-9b77-8cdf053cd14a/providers/Microsoft.Web/locations/eastus/managedApis/sql",
+                    "connectionId": "/subscriptions/2efcc8a1-b14d-45a0-9b77-8cdf053cd14a/resourceGroups/khoj-rg-dev-training/providers/Microsoft.Web/connections/sql",
+                    "connectionName": "sql"
+                }
+            }
+        }
+    }
+}
