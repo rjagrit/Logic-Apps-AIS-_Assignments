@@ -33,64 +33,27 @@
                     }
                 }
             },
-            "Extract_Reference_Number": {
+            "Extract_Report_ID": {
                 "runAfter": {
                     "Get_secret": [
                         "Succeeded"
                     ]
                 },
                 "type": "Compose",
-                "inputs": "@xpath(xml(triggerBody()),'/*/Header/Reference/text()')"
+                "inputs": "@xpath(xml(triggerBody()), '/*/Header/ReportID/text()')\r\n"
             },
-            "Extract_Customer_Name": {
+            "Get_Raw_XML_Body": {
                 "runAfter": {
-                    "Extract_Reference_Number": [
+                    "Extract_Report_ID": [
                         "Succeeded"
                     ]
                 },
                 "type": "Compose",
-                "inputs": "@xpath(xml(triggerBody()), '/*/Header/Customer/text()')\r\n"
-            },
-            "Get_rows_(V2)": {
-                "runAfter": {
-                    "Extract_Customer_Name": [
-                        "Succeeded"
-                    ]
-                },
-                "type": "ApiConnection",
-                "inputs": {
-                    "host": {
-                        "connection": {
-                            "name": "@parameters('$connections')['sql']['connectionId']"
-                        }
-                    },
-                    "method": "get",
-                    "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('default'))},@{encodeURIComponent(encodeURIComponent('default'))}/tables/@{encodeURIComponent(encodeURIComponent('[dbo].[IncomingData]'))}/items",
-                    "queries": {
-                        "$filter": "ReferenceNumber eq '@{outputs('Extract_Reference_Number')}'"
-                    }
-                }
+                "inputs": "@triggerBody()"
             },
             "Condition": {
                 "actions": {
-                    "Response": {
-                        "runAfter": {
-                            "Insert_row_(V2)": [
-                                "Succeeded"
-                            ]
-                        },
-                        "type": "Response",
-                        "kind": "Http",
-                        "inputs": {
-                            "statusCode": 201,
-                            "body": {
-                                "status": "Record Inserted",
-                                "ReferenceNumber": "@{outputs('Extract_Reference_Number')}",
-                                "message": "Record did not exist and was successfully inserted."
-                            }
-                        }
-                    },
-                    "Insert_row_(V2)": {
+                    "Execute_stored_procedure_(V2)": {
                         "type": "ApiConnection",
                         "inputs": {
                             "host": {
@@ -100,15 +63,32 @@
                             },
                             "method": "post",
                             "body": {
-                                "ReferenceNumber": "@{outputs('Extract_Reference_Number')}",
-                                "CustomerName": "@{outputs('Extract_Customer_Name')}"
+                                "RawXML": "@{outputs('Get_Raw_XML_Body')}",
+                                "ReportID": "@{outputs('Extract_Report_ID')}"
                             },
-                            "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('default'))},@{encodeURIComponent(encodeURIComponent('default'))}/tables/@{encodeURIComponent(encodeURIComponent('[dbo].[IncomingData]'))}/items"
+                            "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('default'))},@{encodeURIComponent(encodeURIComponent('default'))}/procedures/@{encodeURIComponent(encodeURIComponent('[dbo].[usp_StageInspectionReport]'))}"
+                        }
+                    },
+                    "Response": {
+                        "runAfter": {
+                            "Execute_stored_procedure_(V2)": [
+                                "Succeeded"
+                            ]
+                        },
+                        "type": "Response",
+                        "kind": "Http",
+                        "inputs": {
+                            "statusCode": 202,
+                            "body": {
+                                "status": "Accepted",
+                                "message": "XML report staged successfully by Stored Procedure.",
+                                "report_id": "@{outputs('Extract_Report_ID')}"
+                            }
                         }
                     }
                 },
                 "runAfter": {
-                    "Get_rows_(V2)": [
+                    "Get_Raw_XML_Body": [
                         "Succeeded"
                     ]
                 },
@@ -118,11 +98,11 @@
                             "type": "Response",
                             "kind": "Http",
                             "inputs": {
-                                "statusCode": 200,
+                                "statusCode": 400,
                                 "body": {
-                                    "status": "Record Skipped",
-                                    "ReferenceNumber": "@{outputs('Extract_Reference_Number')}",
-                                    "message": "Record already exists, insertion skipped."
+                                    "status": "Rejected",
+                                    "error": "Missing_Key_Field",
+                                    "message": "The incoming XML is missing the required ReportID field in the header."
                                 }
                             }
                         }
@@ -132,8 +112,8 @@
                     "and": [
                         {
                             "equals": [
-                                "@length(body('Get_rows_(V2)')?['value'])",
-                                0
+                                "@empty(outputs('Extract_Report_ID'))",
+                                false
                             ]
                         }
                     ]
