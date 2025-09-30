@@ -1,0 +1,174 @@
+{
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "contentVersion": "1.0.0.0",
+        "triggers": {
+            "When_an_HTTP_request_is_received": {
+                "type": "Request",
+                "kind": "Http",
+                "inputs": {
+                    "method": "POST"
+                }
+            }
+        },
+        "actions": {
+            "Get_secret": {
+                "runAfter": {},
+                "type": "ApiConnection",
+                "inputs": {
+                    "host": {
+                        "connection": {
+                            "name": "@parameters('$connections')['keyvault-3']['connectionId']"
+                        }
+                    },
+                    "method": "get",
+                    "path": "/secrets/@{encodeURIComponent('J-SqlConnectionString')}/value"
+                },
+                "runtimeConfiguration": {
+                    "secureData": {
+                        "properties": [
+                            "inputs",
+                            "outputs"
+                        ]
+                    }
+                }
+            },
+            "Extract_Reference_Number": {
+                "runAfter": {
+                    "Get_secret": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "Compose",
+                "inputs": "@xpath(xml(triggerBody()),'/*/Header/Reference/text()')"
+            },
+            "Extract_Customer_Name": {
+                "runAfter": {
+                    "Extract_Reference_Number": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "Compose",
+                "inputs": "@xpath(xml(triggerBody()), '/*/Header/Customer/text()')\r\n"
+            },
+            "Get_rows_(V2)": {
+                "runAfter": {
+                    "Extract_Customer_Name": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "ApiConnection",
+                "inputs": {
+                    "host": {
+                        "connection": {
+                            "name": "@parameters('$connections')['sql']['connectionId']"
+                        }
+                    },
+                    "method": "get",
+                    "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('default'))},@{encodeURIComponent(encodeURIComponent('default'))}/tables/@{encodeURIComponent(encodeURIComponent('[dbo].[IncomingData]'))}/items",
+                    "queries": {
+                        "$filter": "ReferenceNumber eq '@{outputs('Extract_Reference_Number')}'"
+                    }
+                }
+            },
+            "Condition": {
+                "actions": {
+                    "Response": {
+                        "runAfter": {
+                            "Insert_row_(V2)": [
+                                "Succeeded"
+                            ]
+                        },
+                        "type": "Response",
+                        "kind": "Http",
+                        "inputs": {
+                            "statusCode": 201,
+                            "body": {
+                                "status": "Record Inserted",
+                                "ReferenceNumber": "@{outputs('Extract_Reference_Number')}",
+                                "message": "Record did not exist and was successfully inserted."
+                            }
+                        }
+                    },
+                    "Insert_row_(V2)": {
+                        "type": "ApiConnection",
+                        "inputs": {
+                            "host": {
+                                "connection": {
+                                    "name": "@parameters('$connections')['sql']['connectionId']"
+                                }
+                            },
+                            "method": "post",
+                            "body": {
+                                "ReferenceNumber": "@{outputs('Extract_Reference_Number')}",
+                                "CustomerName": "@{outputs('Extract_Customer_Name')}"
+                            },
+                            "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('default'))},@{encodeURIComponent(encodeURIComponent('default'))}/tables/@{encodeURIComponent(encodeURIComponent('[dbo].[IncomingData]'))}/items"
+                        }
+                    }
+                },
+                "runAfter": {
+                    "Get_rows_(V2)": [
+                        "Succeeded"
+                    ]
+                },
+                "else": {
+                    "actions": {
+                        "Response_1": {
+                            "type": "Response",
+                            "kind": "Http",
+                            "inputs": {
+                                "statusCode": 200,
+                                "body": {
+                                    "status": "Record Skipped",
+                                    "ReferenceNumber": "@{outputs('Extract_Reference_Number')}",
+                                    "message": "Record already exists, insertion skipped."
+                                }
+                            }
+                        }
+                    }
+                },
+                "expression": {
+                    "and": [
+                        {
+                            "equals": [
+                                "@length(body('Get_rows_(V2)')?['value'])",
+                                0
+                            ]
+                        }
+                    ]
+                },
+                "type": "If"
+            }
+        },
+        "outputs": {},
+        "parameters": {
+            "$connections": {
+                "type": "Object",
+                "defaultValue": {}
+            }
+        }
+    },
+    "parameters": {
+        "$connections": {
+            "type": "Object",
+            "value": {
+                "keyvault-3": {
+                    "id": "/subscriptions/2efcc8a1-b14d-45a0-9b77-8cdf053cd14a/providers/Microsoft.Web/locations/eastus/managedApis/keyvault",
+                    "connectionId": "/subscriptions/2efcc8a1-b14d-45a0-9b77-8cdf053cd14a/resourceGroups/khoj-rg-dev-training/providers/Microsoft.Web/connections/keyvault-4",
+                    "connectionName": "keyvault-4",
+                    "connectionProperties": {
+                        "authentication": {
+                            "type": "ManagedServiceIdentity"
+                        }
+                    }
+                },
+                "sql": {
+                    "id": "/subscriptions/2efcc8a1-b14d-45a0-9b77-8cdf053cd14a/providers/Microsoft.Web/locations/eastus/managedApis/sql",
+                    "connectionId": "/subscriptions/2efcc8a1-b14d-45a0-9b77-8cdf053cd14a/resourceGroups/khoj-rg-dev-training/providers/Microsoft.Web/connections/sql",
+                    "connectionName": "sql"
+                }
+            }
+        }
+    }
+}
