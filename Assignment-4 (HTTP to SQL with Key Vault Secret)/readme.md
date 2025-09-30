@@ -80,5 +80,7 @@ This Logic App demonstrates how to receive an HTTP POST request, extract data fr
 ## b) Data inserted in the table
 <img width="936" height="242" alt="image" src="https://github.com/user-attachments/assets/30607baa-f54c-4688-ae8a-943f1c29c63f" />
 
+### The Workflow
+<img width="1021" height="660" alt="image" src="https://github.com/user-attachments/assets/a161c431-890d-4aa5-92b9-bab02f996ef3" />
 
 
