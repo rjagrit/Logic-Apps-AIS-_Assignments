@@ -177,7 +177,23 @@ After deployment, the Logic App will:
 
 ---
 
-## 🧠 Author
-**Jagrit**  
-System Analyst Trainee @ Khoj Information Technology Pvt. Ltd.
+## The Screenshots
+<img width="1264" height="656" alt="1" src="https://github.com/user-attachments/assets/39609b2e-221c-40c6-a7f6-5168902da593" />
+<img width="1282" height="653" alt="2" src="https://github.com/user-attachments/assets/6355a623-8efc-41a2-b1d0-39359bbad782" />
+<img width="1274" height="656" alt="3" src="https://github.com/user-attachments/assets/f75ba038-8939-4c55-b5c7-fe1f1f7403ba" />
+<img width="1269" height="658" alt="4" src="https://github.com/user-attachments/assets/00ab288a-c786-45a5-82ad-8baef98c3670" />
+<img width="1274" height="659" alt="5" src="https://github.com/user-attachments/assets/3c434b77-c09a-4677-8d6b-813b9ed8d08f" />
+
+### Copy the Function App code attached in this repo
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/af457a7d-886d-4176-90cb-d8790595dd7e" />
+<img width="1270" height="638" alt="6" src="https://github.com/user-attachments/assets/4e44a2ea-e66f-4f3c-a4f9-d17350d3064f" />
+<img width="1276" height="632" alt="7" src="https://github.com/user-attachments/assets/f9b1a7d5-6bf3-4f95-9b67-f874f0195177" />
+<img width="1278" height="659" alt="8" src="https://github.com/user-attachments/assets/fad2f41b-54e8-4223-a98a-788954c2b126" />
+<img width="972" height="653" alt="9" src="https://github.com/user-attachments/assets/5290a1dd-966f-4bfd-a6b8-8acc327a9528" />
+
+## The Output
+<img width="1919" height="824" alt="Screenshot 2025-10-03 122554" src="https://github.com/user-attachments/assets/f4965762-89b8-4fb9-aaa9-1d9d403fcab6" />
+<img width="1916" height="756" alt="image" src="https://github.com/user-attachments/assets/09672222-91eb-4a42-86df-87b3c622cb37" />
+<img width="1558" height="513" alt="Screenshot 2025-10-03 122533" src="https://github.com/user-attachments/assets/404d2193-31b0-489f-a9cb-7dceb648f494" />
+
 
