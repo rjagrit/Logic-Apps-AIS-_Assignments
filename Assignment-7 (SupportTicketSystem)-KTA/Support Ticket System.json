@@ -1,0 +1,168 @@
+{
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "contentVersion": "1.0.0.0",
+        "triggers": {
+            "When_an_HTTP_request_is_received": {
+                "type": "Request",
+                "kind": "Http",
+                "inputs": {
+                    "method": "POST",
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "issue": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "actions": {
+            "HTTP": {
+                "runAfter": {},
+                "type": "Http",
+                "inputs": {
+                    "uri": "https://khoj-func-dev-training-03-a8a0ghgkcghyard7.eastus-01.azurewebsites.net/api/CreateTicket?code=HLHn1lPP1M5x2AjoPWptbDJ2BLKFgmOCEUcIyKFq5vLwAzFuUHPBbQ==",
+                    "method": "POST",
+                    "body": {
+                        "name": "@{triggerBody()?['name']}",
+                        "email": "@{triggerBody()?['email']}",
+                        "issue": "@{triggerBody()?['issue']}"
+                    }
+                },
+                "runtimeConfiguration": {
+                    "contentTransfer": {
+                        "transferMode": "Chunked"
+                    }
+                }
+            },
+            "Insert_row_(V2)": {
+                "runAfter": {
+                    "Parse_JSON": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "ApiConnection",
+                "inputs": {
+                    "host": {
+                        "connection": {
+                            "name": "@parameters('$connections')['sql']['connectionId']"
+                        }
+                    },
+                    "method": "post",
+                    "body": {
+                        "TicketId": "@body('Parse_JSON')?['TicketId']",
+                        "Name": "@body('Parse_JSON')?['Name']",
+                        "Email": "@body('Parse_JSON')?['Email']",
+                        "Issue": "@body('Parse_JSON')?['Issue']",
+                        "Status": "@body('Parse_JSON')?['Status']",
+                        "CreatedAt": "@body('Parse_JSON')?['CreatedAt']"
+                    },
+                    "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('default'))},@{encodeURIComponent(encodeURIComponent('default'))}/tables/@{encodeURIComponent(encodeURIComponent('[dbo].[Tickets]'))}/items"
+                }
+            },
+            "Parse_JSON": {
+                "runAfter": {
+                    "HTTP": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "ParseJson",
+                "inputs": {
+                    "content": "@body('HTTP')",
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "TicketId": {
+                                "type": "string"
+                            },
+                            "Name": {
+                                "type": "string"
+                            },
+                            "Email": {
+                                "type": "string"
+                            },
+                            "Issue": {
+                                "type": "string"
+                            },
+                            "Status": {
+                                "type": "string"
+                            },
+                            "CreatedAt": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "Create_blob_(V2)": {
+                "runAfter": {
+                    "Insert_row_(V2)": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "ApiConnection",
+                "inputs": {
+                    "host": {
+                        "connection": {
+                            "name": "@parameters('$connections')['azureblob']['connectionId']"
+                        }
+                    },
+                    "method": "post",
+                    "body": "Ticket ID: @{body('Parse_JSON')?['TicketId']}\nName      : @{body('Parse_JSON')?['Name']}\nEmail     : @{body('Parse_JSON')?['Email']}\nIssue     : @{body('Parse_JSON')?['Issue']}\nStatus    : @{body('Parse_JSON')?['Status']}\nRaisedAt  : @{body('Parse_JSON')?['CreatedAt']}\n",
+                    "headers": {
+                        "ReadFileMetadataFromServer": true
+                    },
+                    "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('khojstdevtrain01'))}/files",
+                    "queries": {
+                        "folderPath": "/jagrit-cont-03",
+                        "name": "tickets/@{formatDateTime(utcNow(),'yyyy-MM-dd')}/@{body('Parse_JSON')?['TicketId']}.txt\n",
+                        "queryParametersSingleEncoded": true
+                    }
+                },
+                "runtimeConfiguration": {
+                    "contentTransfer": {
+                        "transferMode": "Chunked"
+                    }
+                }
+            }
+        },
+        "outputs": {},
+        "parameters": {
+            "$connections": {
+                "type": "Object",
+                "defaultValue": {}
+            }
+        }
+    },
+    "parameters": {
+        "$connections": {
+            "type": "Object",
+            "value": {
+                "sql": {
+                    "id": "/subscriptions/2efcc8a1-b14d-45a0-9b77-8cdf053cd14a/providers/Microsoft.Web/locations/eastus/managedApis/sql",
+                    "connectionId": "/subscriptions/2efcc8a1-b14d-45a0-9b77-8cdf053cd14a/resourceGroups/khoj-rg-dev-training/providers/Microsoft.Web/connections/sql",
+                    "connectionName": "sql"
+                },
+                "azureblob": {
+                    "id": "/subscriptions/2efcc8a1-b14d-45a0-9b77-8cdf053cd14a/providers/Microsoft.Web/locations/eastus/managedApis/azureblob",
+                    "connectionId": "/subscriptions/2efcc8a1-b14d-45a0-9b77-8cdf053cd14a/resourceGroups/khoj-rg-dev-training/providers/Microsoft.Web/connections/azureblob-4",
+                    "connectionName": "azureblob-4",
+                    "connectionProperties": {
+                        "authentication": {
+                            "type": "ManagedServiceIdentity"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
