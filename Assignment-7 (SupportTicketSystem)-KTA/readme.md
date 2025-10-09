@@ -189,6 +189,8 @@ After deployment, the Logic App will:
 <img width="1270" height="638" alt="6" src="https://github.com/user-attachments/assets/4e44a2ea-e66f-4f3c-a4f9-d17350d3064f" />
 <img width="1276" height="632" alt="7" src="https://github.com/user-attachments/assets/f9b1a7d5-6bf3-4f95-9b67-f874f0195177" />
 <img width="1278" height="659" alt="8" src="https://github.com/user-attachments/assets/fad2f41b-54e8-4223-a98a-788954c2b126" />
+
+### The Workflow Diagram
 <img width="972" height="653" alt="9" src="https://github.com/user-attachments/assets/5290a1dd-966f-4bfd-a6b8-8acc327a9528" />
 
 ## The Output
